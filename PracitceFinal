@@ -15,15 +15,15 @@ Database = os.getenv('Database')
 data=f"SERVER={SERVER};uid={uid};pwd={DB_PASSWORD};Database={Database};Driver={Driver}"
 
 conn = pyodbc.connect (data)
-cursor = conn.cursor()  
+#cursor = conn.cursor()
 
-#3
+# 3
 df = pd.read_csv('mymoviedb.csv', lineterminator='\n')
 df.dropna(how = "all")
 
-#print(df)
+print(df)
 
-#4
+# 4
 df = pd.read_csv("./mymoviedb.csv",lineterminator="\n")
 
 conn = pyodbc.connect(f'Driver={{SQL Server}};SERVER={SERVER};Database={Database};Uid={uid};pwd={DB_PASSWORD}')
@@ -50,25 +50,37 @@ for row in df.itertuples():
 
 
 
-# Commit the transaction
-conn.commit()
-
-# Close the cursor and the database connection
-cursor.close()
-conn.close()
-
-#5
-
-#cursor.execute(insert_query)
-select_query = "SELECT * FROM Movies"
-df_movies = pd.read_sql(select_query, conn)
-
-conn.commit()
-
-#language_counts = df_movies['Original_Language'].value_counts()
-#df_movies = pd.read_sql(language_counts, conn)
+ #Commit the transaction
 #conn.commit()
 
+#Close the cursor and the database connection
+cursor.close()
+
+# 5
 gpLanguage = df.groupby("Original_Language")[["Original_Language"]].count()
 print(gpLanguage)
 
+# 6
+language_count_query = "SELECT Original_Language, COUNT(*) AS Movie FROM my_movie GROUP BY Original_Language"
+
+# 7
+genre_rating_query = "SELECT Genre, AVG(Vote_Average) AS Average_Rating FROM my_movie GROUP BY Genre"
+
+# 8
+
+# クエリを事前に定義
+query = "SELECT * FROM movies"
+movies_df = pd.read_sql(query,conn)
+# 言語ごとの映画の数を数える
+language_counts = movies_df['Original_Language'].value_counts()
+
+# ジャンルごとに平均値を出す
+genre_ratings = movies_df.groupby('Genre')['Vote_Average'].mean()
+
+# 分析結果をExcelで保存
+with pd.ExcelWriter('analysis_results.xlsx') as writer:
+    language_counts.to_excel(writer, sheet_name='Language Counts')
+    genre_ratings.to_excel(writer, sheet_name='Genre Ratings')
+
+# cursor.close()
+conn.close()
