@@ -1,0 +1,74 @@
+import os
+import pandas as pd
+import pyodbc
+from openpyxl import Workbook
+
+from dotenv import load_dotenv
+load_dotenv()
+
+DB_PASSWORD = os.getenv('DB_PASSWORD')
+Driver = os.getenv ('Driver')
+SERVER = os.getenv('SERVER')
+uid = os.getenv('uid')
+Database = os.getenv('Database')
+
+data=f"SERVER={SERVER};uid={uid};pwd={DB_PASSWORD};Database={Database};Driver={Driver}"
+
+conn = pyodbc.connect (data)
+cursor = conn.cursor()  
+
+#3
+df = pd.read_csv('mymoviedb.csv', lineterminator='\n')
+df.dropna(how = "all")
+
+#print(df)
+
+#4
+df = pd.read_csv("./mymoviedb.csv",lineterminator="\n")
+
+conn = pyodbc.connect(f'Driver={{SQL Server}};SERVER={SERVER};Database={Database};Uid={uid};pwd={DB_PASSWORD}')
+
+cursor = conn.cursor()
+
+
+for row in df.itertuples():
+    cursor.execute(
+        """
+        INSERT INTO Movies (Release_Date, Title, Overview, Popularity, Vote_Count, Vote_Average, Original_Language, Genre, Poster_Url)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        row.Release_Date,
+        row.Title,
+        row.Overview,
+        row.Popularity,
+        row.Vote_Count,
+        row.Vote_Average,
+        row.Original_Language,
+        row.Genre,
+        row.Poster_Url
+    )
+
+
+
+# Commit the transaction
+conn.commit()
+
+# Close the cursor and the database connection
+cursor.close()
+conn.close()
+
+#5
+
+#cursor.execute(insert_query)
+select_query = "SELECT * FROM Movies"
+df_movies = pd.read_sql(select_query, conn)
+
+conn.commit()
+
+#language_counts = df_movies['Original_Language'].value_counts()
+#df_movies = pd.read_sql(language_counts, conn)
+#conn.commit()
+
+gpLanguage = df.groupby("Original_Language")[["Original_Language"]].count()
+print(gpLanguage)
+

@@ -1,0 +1,48 @@
+import pyodbc
+import pandas as pd
+import os
+
+
+from dotenv import load_dotenv
+load_dotenv()
+
+DB_PASSWORD = os.getenv('DB_PASSWORD')
+Driver = os.getenv ('Driver')
+Server = os.getenv('Server')
+uid = os.getenv('uid')
+Database = os.getenv('Database')
+
+data=f"Server={Server};uid={uid};pwd={DB_PASSWORD};Database={Database};Driver={Driver}"
+
+conn = pyodbc.connect (data)
+cursor = conn.cursor()  
+
+
+#insert_query = "INSERT INTO Users (名前,年齢) Values ('Thandar','40')"
+
+#data_to_insert = ('Thandar', '40')
+
+#cursor.execute(insert_query)
+
+#update_query = "UPDATE Users SET 年齢 = 年齢 + 10"
+
+#cursor.execute(update_query)
+
+
+#conn = pyodbc.connect(data)
+    
+#sql_query = "SELECT * FROM Users"
+    
+#df = pd.read_sql(sql_query, conn)
+    
+#print(df)
+conn.commit()
+
+
+
+#print(Server)
+
+
+
+#conn.close()
+
